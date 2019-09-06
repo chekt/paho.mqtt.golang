@@ -238,7 +238,7 @@ func (c *client) Connect() Token {
 			DEBUG.Println(CLI, "about to write new connect msg")
 			c.conn, err = openConnection(broker, c.options.TLSConfig, c.options.ConnectTimeout, c.options.HTTPHeaders)
 			if err == nil {
-				DEBUG.Println(CLI, "socket connected to broker")
+				DEBUG.Println(CLI, "socket connected to broker", c.conn.RemoteAddr().String())
 				switch c.options.ProtocolVersion {
 				case 3:
 					DEBUG.Println(CLI, "Using MQTT 3.1 protocol")
@@ -356,7 +356,7 @@ func (c *client) reconnect() {
 			c.conn, err = openConnection(broker, c.options.TLSConfig, c.options.ConnectTimeout, c.options.HTTPHeaders)
 			c.Unlock()
 			if err == nil {
-				DEBUG.Println(CLI, "socket connected to broker")
+				DEBUG.Println(CLI, "socket connected to broker", c.conn.RemoteAddr().String())
 				switch c.options.ProtocolVersion {
 				case 0x83:
 					DEBUG.Println(CLI, "Using MQTT 3.1b protocol")
@@ -455,6 +455,8 @@ func (c *client) connect() (byte, bool) {
 		ERROR.Println(NET, "received nil packet")
 		return packets.ErrNetworkError, false
 	}
+	DEBUG.Println(NET, "read packet", ca.String(), ca.Details().MessageID, ca.Details().Qos)
+	DEBUG.Printf("%s read packet %+v\n", NET, ca)
 
 	msg, ok := ca.(*packets.ConnackPacket)
 	if !ok {
